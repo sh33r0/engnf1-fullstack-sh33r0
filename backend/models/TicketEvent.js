@@ -9,7 +9,7 @@ const ticketEventSchema = new mongoose.Schema({
     field: {
         type: String,
         required: true,
-        enum: ["category", "priority", "status", "assignedId"]
+        enum: ["category", "priority", "status", "assigneeId"]
     },
     oldValue: {
         type:String,
@@ -20,13 +20,13 @@ const ticketEventSchema = new mongoose.Schema({
         default: null
     },
     actor:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        type: String,
         required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        immutable: true
     }
 });
 module.exports = mongoose.model("TicketEvent", ticketEventSchema);

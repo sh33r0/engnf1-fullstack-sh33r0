@@ -46,7 +46,7 @@ const ticketSchema = new moongose.Schema({
         enum: ["OPEN","IN_PROGRESS","RESOLVED","CLOSED"],
         default: "OPEN"
     },
-    assignedId: {
+    assigneeId: {
         type: moongose.Schema.Types.ObjectId,
         ref: "User",
         default: null
