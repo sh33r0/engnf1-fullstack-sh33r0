@@ -46,11 +46,10 @@ const bookingSchema = new mongoose.Schema({
     timestamps:true
 });
 
-bookingSchema.pre("validate", function (next) {
+bookingSchema.pre("validate", function () {
     if (this.startTime && this.endTime && this.endTime <= this.startTime) {
         this.invalidate("endTime", "End time must be after start time");
     }
-    next();
 });
 
 bookingSchema.index({ resourceId: 1, startTime: 1, endTime: 1 });

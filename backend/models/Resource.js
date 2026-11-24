@@ -31,6 +31,11 @@ const resourceSchema = new moongose.Schema({
         maxlength:300,
         default:""
     },
+    bookingVersion: {
+    type: Number,
+    default: 0,
+    select: false
+    },      
     isActive:{
         type:Boolean,
         default:true
