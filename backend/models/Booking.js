@@ -1,18 +1,18 @@
-const mongoosec= require('mongoose');
+const mongoose= require('mongoose');
 
-const bookingSchema = new mongoosec.Schema({
+const bookingSchema = new mongoose.Schema({
     resourceId:{
-        type:mongoosec.Schema.Types.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:'Resource',
         required:true
     },
     userId:{
-        type:mongoosec.Schema.Types.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:'User',
         required:true
     },
     ticketId:{
-        type:mongoosec.Schema.Types.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:'Ticket',
         default:null
     },
@@ -46,4 +46,13 @@ const bookingSchema = new mongoosec.Schema({
     timestamps:true
 });
 
-module.exports = mongoosec.model('Booking', bookingSchema);
+bookingSchema.pre("validate", function (next) {
+    if (this.startTime && this.endTime && this.endTime <= this.startTime) {
+        this.invalidate("endTime", "End time must be after start time");
+    }
+    next();
+});
+
+bookingSchema.index({ resourceId: 1, startTime: 1, endTime: 1 });
+
+module.exports = mongoose.model('Booking', bookingSchema);

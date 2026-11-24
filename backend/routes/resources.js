@@ -1,7 +1,6 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const Resource = require("../models/Resource");
-const { auth } = require("../middleware/auth");
+const { auth, admin } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -97,7 +96,6 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-const { admin } = require("../middleware/auth");
 
 router.post("/", auth, admin, async (req, res) => {
     try {
