@@ -258,4 +258,52 @@ router.patch("/:id/decision", auth, admin, async (req, res) => {
     }
 });
 
+router.patch("/:id/cancel", auth, async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                error: { code: "VALIDATION_ERROR", message: "Invalid booking ID" }
+            });
+        }
+
+        const q = {
+            _id: req.params.id,
+            status: { $in: ["PENDING", "APPROVED"] }
+        };
+
+        if (req.user.role !== "ADMIN") {
+            q.userId = req.user._id;
+        }
+
+        const booking = await Booking.findOneAndUpdate(
+            q,
+            { $set: { status: "CANCELLED" } },
+            { returnDocument: "after", runValidators: true }
+        )
+            .populate("resourceId", "name type capacity")
+            .populate("userId", "name email");
+
+        if (!booking) {
+            const exists = await Booking.exists({ _id: req.params.id });
+
+            return res.status(exists ? 403 : 404).json({
+                error: {
+                    code: exists ? "BOOKING_NOT_CANCELLABLE" : "NOT_FOUND",
+                    message: exists
+                        ? "Booking not found, inaccessible, or no longer cancellable"
+                        : "Booking not found"
+                }
+            });
+        }
+
+        return res.json({ booking });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            error: { code: "SERVER_ERROR", message: "Failed to cancel booking" }
+        });
+    }
+});
+
 module.exports = router;
