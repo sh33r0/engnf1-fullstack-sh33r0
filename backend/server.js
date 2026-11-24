@@ -14,7 +14,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tickets", require("./routes/tickets"));
 app.use("/api/resources", require("./routes/resources"));
 app.use("/api/bookings", require("./routes/bookings"));
-
+app.use("/api/stats", require("./routes/stats"));
 
 app.get("/", (req, res) => {
     res.json({message: "TriageSync API is running"});
