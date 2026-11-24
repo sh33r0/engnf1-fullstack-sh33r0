@@ -237,7 +237,7 @@ router.patch("/:id", auth, async (req, res) => {
         priority: ["URGENT", "HIGH", "MEDIUM", "LOW"],
         status: ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
     };
-    for(const key of keys){
+    for(const k of keys){
         if(k == "assigneeId"){
             if(req.body[k] !== null && !mongoose.Types.ObjectId.isValid(req.body[k])){
                 return res.status(400).json({
@@ -283,7 +283,7 @@ router.patch("/:id", auth, async (req, res) => {
         const events = [];
         const actor = req.get("X-User-Id")?.trim() || req.user.email;
 
-        for(const key of keys){
+        for(const k of keys){
             const oldVal= ticket[k]== null ? null : ticket[k].toString();
             const newVal = req.body[k] === null ? null : req.body[k].toString();
             if(oldVal === newVal) continue;

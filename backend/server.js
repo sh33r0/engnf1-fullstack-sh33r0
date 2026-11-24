@@ -12,6 +12,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tickets", require("./routes/tickets"));
+app.use("/api/resources", require("./routes/resources"));
+
 
 app.get("/", (req, res) => {
     res.json({message: "TriageSync API is running"});
