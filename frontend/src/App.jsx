@@ -59,6 +59,25 @@ function App() {
     setPage(1);
   };
 
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [ticketEvents, setTicketEvents] = useState([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openTicket = async (id) => {
+    setDetailLoading(true);
+    setSelectedTicket(null);
+
+    try {
+      const d = await request(`/tickets/${id}`, {}, token);
+      setSelectedTicket(d.ticket);
+      setTicketEvents(d.events || []);
+    } catch (err) {
+      setTicketError(err.message);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!user || !token) return;
 
@@ -444,12 +463,28 @@ function App() {
             <div className="ticket-table-wrap">
               <table className="ticket-table">
                 <thead>
-                  <tr>
-                    <th>Ticket</th>
-                    <th>Subject</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Status</th>
+                  <tr
+                    key={t._id}
+                    onClick={() => openTicket(t._id)}
+                    className="clickable-row"
+                  >
+                    <td className="ticket-id">{t.externalId}</td>
+                    <td className="ticket-subject">{t.subject}</td>
+                    <td>
+                      <span className="category-tag">{t.category}</span>
+                    </td>
+                    <td>
+                      <span
+                        className={`priority-tag ${t.priority.toLowerCase()}`}
+                      >
+                        {t.priority}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-tag ${t.status.toLowerCase()}`}>
+                        {t.status.replace("_", " ")}
+                      </span>
+                    </td>
                   </tr>
                 </thead>
                 <tbody>
@@ -478,6 +513,77 @@ function App() {
                   ))}
                 </tbody>
               </table>
+              {detailLoading && (
+                <div className="empty-state">Loading ticket details...</div>
+              )}
+
+              {selectedTicket && (
+                <div className="ticket-detail">
+                  <div className="detail-header">
+                    <div>
+                      <span className="eyebrow">
+                        {selectedTicket.externalId}
+                      </span>
+                      <h2>{selectedTicket.subject}</h2>
+                    </div>
+                    <button onClick={() => setSelectedTicket(null)}>
+                      Close
+                    </button>
+                  </div>
+
+                  <p>{selectedTicket.body}</p>
+
+                  <div className="detail-info">
+                    <div>
+                      <span>Category</span>
+                      <strong>{selectedTicket.category}</strong>
+                    </div>
+                    <div>
+                      <span>Priority</span>
+                      <strong>{selectedTicket.priority}</strong>
+                    </div>
+                    <div>
+                      <span>Status</span>
+                      <strong>{selectedTicket.status.replace("_", " ")}</strong>
+                    </div>
+                    <div>
+                      <span>Reviewed</span>
+                      <strong>
+                        {selectedTicket.isReviewed ? "Yes" : "No"}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Human override</span>
+                      <strong>
+                        {selectedTicket.isHumanOverride ? "Yes" : "No"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <h3>Activity history</h3>
+
+                  {ticketEvents.length === 0 ? (
+                    <p>No activity recorded yet.</p>
+                  ) : (
+                    <div className="event-list">
+                      {ticketEvents.map((ev, i) => (
+                        <div className="event-item" key={ev._id || i}>
+                          <strong>{ev.field}</strong>
+                          <p>
+                            {ev.oldValue || "None"} → {ev.newValue || "None"}
+                          </p>
+                          <small>{ev.actor}</small>
+                          <small>
+                            {ev.createdAt
+                              ? new Date(ev.createdAt).toLocaleString()
+                              : ""}
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </section>
