@@ -1,122 +1,107 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="brand-icon">✳</span>
+          TriageSync
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        <p className="nav-label">WORKSPACE</p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <nav className="nav">
+          <button className="nav-item active">▤ <span>Tickets</span></button>
+          <button className="nav-item">▦ <span>Resources</span></button>
+          <button className="nav-item">◷ <span>Bookings</span></button>
+        </nav>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <div className="sidebar-bottom">
+          <div className="help-card">
+            <span>✦</span>
+            <h4>Stay organized.</h4>
+            <p>Keep every request moving with TriageSync.</p>
+          </div>
+
+          <div className="profile">
+            <div className="avatar">U</div>
+            <div>
+              <strong>Workspace User</strong>
+              <small>Member</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main className="main">
+        <header className="topbar">
+          <div>
+            <span className="muted">Workspace / </span>
+            <strong>Overview</strong>
+          </div>
+
+          <div className="top-right">
+            <span className="muted">TriageSync Workspace</span>
+            <div className="avatar">U</div>
+          </div>
+        </header>
+
+        <section className="content">
+          <div className="heading">
+            <div>
+              <span className="eyebrow">OVERVIEW</span>
+              <h1>Your support workspace.</h1>
+              <p>Manage requests, resources, and bookings in one place.</p>
+            </div>
+
+            <button className="primary-btn">＋ New request</button>
+          </div>
+
+          <div className="welcome-card">
+            <div>
+              <span className="eyebrow">WELCOME TO TRIAGESYNC</span>
+              <h2>A clearer way to manage support.</h2>
+              <p>Your workspace is ready. Start by exploring your tickets and resources.</p>
+            </div>
+            <div className="welcome-art">✳</div>
+          </div>
+
+          <div className="section-title">
+            <h2>Workspace modules</h2>
+            <span>YOUR TOOLS</span>
+          </div>
+
+          <div className="module-grid">
+            <div className="module-card">
+              <div className="module-icon">▤</div>
+              <h3>Tickets</h3>
+              <p>Track, categorize, and manage support requests.</p>
+              <span>Explore tickets ↗</span>
+            </div>
+
+            <div className="module-card">
+              <div className="module-icon">▦</div>
+              <h3>Resources</h3>
+              <p>Browse rooms, labs, and available equipment.</p>
+              <span>Explore resources ↗</span>
+            </div>
+
+            <div className="module-card">
+              <div className="module-icon">◷</div>
+              <h3>Bookings</h3>
+              <p>Request resources and manage your reservations.</p>
+              <span>Explore bookings ↗</span>
+            </div>
+          </div>
+        </section>
+
+        <footer className="footer">
+          TriageSync <span>·</span> Support operations workspace
+        </footer>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
