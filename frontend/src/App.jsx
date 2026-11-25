@@ -9,8 +9,8 @@ async function request(path, options = {}, token = "") {
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers
-    }
+      ...options.headers,
+    },
   });
 
   const data = await res.json().catch(() => ({}));
@@ -29,7 +29,7 @@ function App() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,22 +40,56 @@ function App() {
     total: 0,
     open: 0,
     progress: 0,
-    reviewed: 0
+    reviewed: 0,
   });
   const [ticketLoading, setTicketLoading] = useState(false);
   const [ticketError, setTicketError] = useState("");
 
-  useEffect(() => {
-    if (!token) return;
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [category, setCategory] = useState("");
+  const [priority, setPriority] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const resetFilters = () => {
+    setSearch("");
+    setStatus("");
+    setCategory("");
+    setPriority("");
+    setPage(1);
+  };
 
-    request("/auth/me", {}, token)
-      .then(d => setUser(d.user))
-      .catch(() => {
-        localStorage.removeItem("ts_token");
-        setToken("");
-        setUser(null);
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const load = async () => {
+      setTicketLoading(true);
+      setTicketError("");
+
+      const p = new URLSearchParams({
+        page: String(page),
+        limit: "10",
       });
-  }, [token]);
+
+      if (search.trim()) p.set("q", search.trim());
+      if (status) p.set("status", status);
+      if (category) p.set("category", category);
+      if (priority) p.set("priority", priority);
+
+      try {
+        const d = await request(`/tickets?${p.toString()}`, {}, token);
+        setTickets(d.data || []);
+        setTotalPages(d.totalPages || 1);
+        setStats((s) => ({ ...s, total: d.total || 0 }));
+      } catch (err) {
+        setTicketError(err.message);
+      } finally {
+        setTicketLoading(false);
+      }
+    };
+
+    load();
+  }, [user, token, page, search, status, category, priority]);
 
   useEffect(() => {
     if (!user || !token) return;
@@ -64,18 +98,18 @@ function App() {
     setTicketError("");
 
     request("/tickets?page=1&limit=100", {}, token)
-      .then(d => {
+      .then((d) => {
         const list = d.data || [];
 
         setTickets(list);
         setStats({
           total: d.total || 0,
-          open: list.filter(t => t.status === "OPEN").length,
-          progress: list.filter(t => t.status === "IN_PROGRESS").length,
-          reviewed: list.filter(t => t.isReviewed).length
+          open: list.filter((t) => t.status === "OPEN").length,
+          progress: list.filter((t) => t.status === "IN_PROGRESS").length,
+          reviewed: list.filter((t) => t.isReviewed).length,
         });
       })
-      .catch(err => setTicketError(err.message))
+      .catch((err) => setTicketError(err.message))
       .finally(() => setTicketLoading(false));
   }, [user, token]);
 
@@ -96,7 +130,7 @@ function App() {
       if (mode === "register") {
         await request("/auth/register", {
           method: "POST",
-          body: JSON.stringify(form)
+          body: JSON.stringify(form),
         });
 
         setMode("login");
@@ -107,8 +141,8 @@ function App() {
           method: "POST",
           body: JSON.stringify({
             email: form.email,
-            password: form.password
-          })
+            password: form.password,
+          }),
         });
 
         localStorage.setItem("ts_token", d.token);
@@ -143,8 +177,8 @@ function App() {
             <span className="eyebrow">SUPPORT OPERATIONS, SIMPLIFIED</span>
             <h1>Every issue deserves the right attention.</h1>
             <p>
-              Manage support tickets, coordinate resources, and keep your
-              team moving.
+              Manage support tickets, coordinate resources, and keep your team
+              moving.
             </p>
             <div className="art-shape shape-one" />
             <div className="art-shape shape-two" />
@@ -179,9 +213,7 @@ function App() {
                   minLength={2}
                   maxLength={50}
                   value={form.name}
-                  onChange={e =>
-                    setForm({ ...form, name: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Your name"
                 />
               </label>
@@ -193,9 +225,7 @@ function App() {
                 required
                 type="email"
                 value={form.email}
-                onChange={e =>
-                  setForm({ ...form, email: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="you@example.com"
               />
             </label>
@@ -208,9 +238,7 @@ function App() {
                 minLength={mode === "register" ? 8 : undefined}
                 maxLength={64}
                 value={form.password}
-                onChange={e =>
-                  setForm({ ...form, password: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="Enter your password"
               />
             </label>
@@ -263,9 +291,15 @@ function App() {
         <p className="nav-label">WORKSPACE</p>
 
         <nav className="nav">
-          <button className="nav-item active">▤ <span>Tickets</span></button>
-          <button className="nav-item">▦ <span>Resources</span></button>
-          <button className="nav-item">◷ <span>Bookings</span></button>
+          <button className="nav-item active">
+            ▤ <span>Tickets</span>
+          </button>
+          <button className="nav-item">
+            ▦ <span>Resources</span>
+          </button>
+          <button className="nav-item">
+            ◷ <span>Bookings</span>
+          </button>
         </nav>
 
         <div className="sidebar-bottom">
@@ -276,14 +310,14 @@ function App() {
           </div>
 
           <div className="profile">
-            <div className="avatar">
-              {user.name?.[0]?.toUpperCase()}
-            </div>
+            <div className="avatar">{user.name?.[0]?.toUpperCase()}</div>
             <div className="profile-info">
               <strong>{user.name}</strong>
               <small>{user.role}</small>
             </div>
-            <button className="logout" onClick={logout}>↗</button>
+            <button className="logout" onClick={logout}>
+              ↗
+            </button>
           </div>
         </div>
       </aside>
@@ -297,9 +331,7 @@ function App() {
 
           <div className="top-right">
             <span className="muted">{user.email}</span>
-            <div className="avatar">
-              {user.name?.[0]?.toUpperCase()}
-            </div>
+            <div className="avatar">{user.name?.[0]?.toUpperCase()}</div>
           </div>
         </header>
 
@@ -344,6 +376,64 @@ function App() {
             <span>{stats.total} tickets</span>
           </div>
 
+          <div className="filter-bar">
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search tickets..."
+            />
+
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All statuses</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In progress</option>
+              <option value="RESOLVED">Resolved</option>
+              <option value="CLOSED">Closed</option>
+            </select>
+
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All categories</option>
+              <option value="BILLING">Billing</option>
+              <option value="LOGIN">Login</option>
+              <option value="DELIVERY">Delivery</option>
+              <option value="BUG">Bug</option>
+              <option value="FEATURE_REQUEST">Feature request</option>
+            </select>
+
+            <select
+              value={priority}
+              onChange={(e) => {
+                setPriority(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All priorities</option>
+              <option value="URGENT">Urgent</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+
+            <button className="reset-btn" onClick={resetFilters}>
+              Reset
+            </button>
+          </div>
+
           {ticketLoading ? (
             <div className="empty-state">Loading tickets...</div>
           ) : ticketError ? (
@@ -363,7 +453,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tickets.map(t => (
+                  {tickets.map((t) => (
                     <tr key={t._id}>
                       <td className="ticket-id">{t.externalId}</td>
                       <td className="ticket-subject">{t.subject}</td>
@@ -371,12 +461,16 @@ function App() {
                         <span className="category-tag">{t.category}</span>
                       </td>
                       <td>
-                        <span className={`priority-tag ${t.priority.toLowerCase()}`}>
+                        <span
+                          className={`priority-tag ${t.priority.toLowerCase()}`}
+                        >
                           {t.priority}
                         </span>
                       </td>
                       <td>
-                        <span className={`status-tag ${t.status.toLowerCase()}`}>
+                        <span
+                          className={`status-tag ${t.status.toLowerCase()}`}
+                        >
                           {t.status.replace("_", " ")}
                         </span>
                       </td>
