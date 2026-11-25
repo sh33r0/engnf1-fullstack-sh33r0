@@ -793,3 +793,41 @@ button {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.edit-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.edit-controls label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.edit-controls select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.save-ticket-btn {
+  margin-bottom: 25px;
+}
+
+.save-ticket-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 600px) {
+  .edit-controls {
+    grid-template-columns: 1fr;
+  }
+}

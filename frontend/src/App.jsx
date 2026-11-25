@@ -62,7 +62,10 @@ function App() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [ticketEvents, setTicketEvents] = useState([]);
   const [detailLoading, setDetailLoading] = useState(false);
-
+  const [editCategory, setEditCategory] = useState("");
+  const [editPriority, setEditPriority] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [savingTicket, setSavingTicket] = useState(false);
   const openTicket = async (id) => {
     setDetailLoading(true);
     setSelectedTicket(null);
@@ -77,7 +80,41 @@ function App() {
       setDetailLoading(false);
     }
   };
+  const saveTicket = async () => {
+    if (!selectedTicket) return;
 
+    setSavingTicket(true);
+    setTicketError("");
+
+    try {
+      const d = await request(
+        `/tickets/${selectedTicket._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            category: editCategory,
+            priority: editPriority,
+            status: editStatus,
+          }),
+        },
+        token,
+      );
+
+      setSelectedTicket(d.ticket);
+      const ev = await request(`/tickets/${selectedTicket._id}`, {}, token);
+      setTicketEvents(ev.events || []);
+      setEditCategory(d.ticket.category);
+      setEditPriority(d.ticket.priority);
+      setEditStatus(d.ticket.status);
+      setTickets((ts) =>
+        ts.map((t) => (t._id === d.ticket._id ? d.ticket : t)),
+      );
+    } catch (err) {
+      setTicketError(err.message);
+    } finally {
+      setSavingTicket(false);
+    }
+  };
   useEffect(() => {
     if (!user || !token) return;
 
@@ -463,33 +500,21 @@ function App() {
             <div className="ticket-table-wrap">
               <table className="ticket-table">
                 <thead>
-                  <tr
-                    key={t._id}
-                    onClick={() => openTicket(t._id)}
-                    className="clickable-row"
-                  >
-                    <td className="ticket-id">{t.externalId}</td>
-                    <td className="ticket-subject">{t.subject}</td>
-                    <td>
-                      <span className="category-tag">{t.category}</span>
-                    </td>
-                    <td>
-                      <span
-                        className={`priority-tag ${t.priority.toLowerCase()}`}
-                      >
-                        {t.priority}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-tag ${t.status.toLowerCase()}`}>
-                        {t.status.replace("_", " ")}
-                      </span>
-                    </td>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tickets.map((t) => (
-                    <tr key={t._id}>
+                    <tr
+                      key={t._id}
+                      onClick={() => openTicket(t._id)}
+                      className="clickable-row"
+                    >
                       <td className="ticket-id">{t.externalId}</td>
                       <td className="ticket-subject">{t.subject}</td>
                       <td>
@@ -559,7 +584,57 @@ function App() {
                       </strong>
                     </div>
                   </div>
+                  <h3>Update ticket</h3>
 
+                  <div className="edit-controls">
+                    <label>
+                      Category
+                      <select
+                        value={editCategory}
+                        onChange={(e) => setEditCategory(e.target.value)}
+                      >
+                        <option value="BILLING">Billing</option>
+                        <option value="LOGIN">Login</option>
+                        <option value="DELIVERY">Delivery</option>
+                        <option value="BUG">Bug</option>
+                        <option value="FEATURE_REQUEST">Feature request</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Priority
+                      <select
+                        value={editPriority}
+                        onChange={(e) => setEditPriority(e.target.value)}
+                      >
+                        <option value="URGENT">Urgent</option>
+                        <option value="HIGH">High</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="LOW">Low</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Status
+                      <select
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
+                      >
+                        <option value="OPEN">Open</option>
+                        <option value="IN_PROGRESS">In progress</option>
+                        <option value="RESOLVED">Resolved</option>
+                        <option value="CLOSED">Closed</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <button
+                    className="primary-btn save-ticket-btn"
+                    onClick={saveTicket}
+                    disabled={savingTicket}
+                  >
+                    {savingTicket ? "Saving..." : "Save changes"}
+                  </button>
                   <h3>Activity history</h3>
 
                   {ticketEvents.length === 0 ? (
