@@ -13,8 +13,8 @@ Ticket classification uses deterministic keyword rules. Agents can review ticket
 
 ## 2. Live links
 
-- Frontend: `ADD_DEPLOYED_FRONTEND_URL`
-- Backend API: `ADD_DEPLOYED_BACKEND_URL`
+- Frontend: `https://engnf1-fullstack-sh33r0.vercel.app/`
+- Backend API: `https://engnf1-fullstack-sh33r0.onrender.com`
 - GitHub: https://github.com/sh33r0/engnf1-fullstack-sh33r0
 
 Replace the frontend and backend placeholders with the final HTTPS deployment URLs.
