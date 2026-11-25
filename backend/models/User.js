@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const bcrypt = require("bcryptjs");
-const { maximum } = require("firebase/firestore/pipelines");
 
 const userSchema = new mongoose.Schema({
     name: {
