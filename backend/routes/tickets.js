@@ -3,7 +3,7 @@ const TicketEvent = require("../models/TicketEvent");
 const User = require("../models/User");
 const express = require("express");
 const Ticket = require("../models/Ticket");
-const { auth } = require("../middleware/auth");
+const { auth, admin } = require("../middleware/auth");
 const router = express.Router();
 
 const classify = (s, b) => {
@@ -41,7 +41,7 @@ const classify = (s, b) => {
   return { category, priority };
 };
 
-router.post("/import", auth, async (req, res) => {
+router.post("/import", auth, admin, async (req, res) => {
   try {
     const { tickets } = req.body;
     if (!tickets || !Array.isArray(tickets)) {
@@ -212,9 +212,9 @@ router.get("/", auth, async (req, res) => {
 
 router.patch("/:id", auth, async (req, res) => {
     const allowed = ["category", "priority", "status", "assigneeId"];
-    const keys =Object.keys(req.body || {});
+    const keys = Object.keys(req.body || {});
 
-    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
         return res.status(400).json({
             error: {
                 code: "NOT_FOUND",
@@ -223,7 +223,7 @@ router.patch("/:id", auth, async (req, res) => {
         });
     }
 
-    if(!keys.length || keys.some(k => !allowed.includes(k))){
+    if (!keys.length || keys.some(k => !allowed.includes(k))) {
         return res.status(400).json({
             error: {
                 code: "INVALID_INPUT",
@@ -237,25 +237,28 @@ router.patch("/:id", auth, async (req, res) => {
         priority: ["URGENT", "HIGH", "MEDIUM", "LOW"],
         status: ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
     };
-    for(const k of keys){
-        if(k == "assigneeId"){
-            if(req.body[k] !== null && !mongoose.Types.ObjectId.isValid(req.body[k])){
+
+    for (const k of keys) {
+        if (k === "assigneeId") {
+            if (req.body[k] !== null && !mongoose.Types.ObjectId.isValid(req.body[k])) {
                 return res.status(400).json({
                     error: {
                         code: "VALIDATION_ERROR",
                         message: "Invalid assignee ID"
                     }
                 });
-            } else if(!enums[k].includes(req.body[k])){
-                return res.status(400).json({
-                    error: {
-                        code: "VALIDATION_ERROR",
-                        message: `Invalid value for ${k}`
-                    }
-                });
             }
+        } else if (!enums[k].includes(req.body[k])) {
+            return res.status(400).json({
+                error: {
+                    code: "VALIDATION_ERROR",
+                    message: `Invalid value for ${k}`
+                }
+            });
         }
     }
+    
+
     const session = await mongoose.startSession();
 
     try {
