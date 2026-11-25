@@ -35,6 +35,16 @@ function App() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
+  const [tickets, setTickets] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    open: 0,
+    progress: 0,
+    reviewed: 0
+  });
+  const [ticketLoading, setTicketLoading] = useState(false);
+  const [ticketError, setTicketError] = useState("");
+
   useEffect(() => {
     if (!token) return;
 
@@ -46,6 +56,28 @@ function App() {
         setUser(null);
       });
   }, [token]);
+
+  useEffect(() => {
+    if (!user || !token) return;
+
+    setTicketLoading(true);
+    setTicketError("");
+
+    request("/tickets?page=1&limit=100", {}, token)
+      .then(d => {
+        const list = d.data || [];
+
+        setTickets(list);
+        setStats({
+          total: d.total || 0,
+          open: list.filter(t => t.status === "OPEN").length,
+          progress: list.filter(t => t.status === "IN_PROGRESS").length,
+          reviewed: list.filter(t => t.isReviewed).length
+        });
+      })
+      .catch(err => setTicketError(err.message))
+      .finally(() => setTicketLoading(false));
+  }, [user, token]);
 
   function changeMode(next) {
     setMode(next);
@@ -276,46 +308,84 @@ function App() {
             <div>
               <span className="eyebrow">OVERVIEW</span>
               <h1>Welcome, {user.name?.split(" ")[0]}.</h1>
-              <p>Your TriageSync workspace is ready.</p>
+              <p>Here's what's happening with your support tickets.</p>
+            </div>
+            <button className="primary-btn">＋ New ticket</button>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card">
+              <span>Total tickets</span>
+              <h2>{stats.total}</h2>
+              <small>All support requests</small>
+            </div>
+            <div className="stat-card">
+              <span>Open tickets</span>
+              <h2>{stats.open}</h2>
+              <small>Awaiting action</small>
+            </div>
+            <div className="stat-card">
+              <span>In progress</span>
+              <h2>{stats.progress}</h2>
+              <small>Currently being handled</small>
+            </div>
+            <div className="stat-card">
+              <span>Reviewed</span>
+              <h2>{stats.reviewed}</h2>
+              <small>Tickets reviewed</small>
             </div>
           </div>
 
-          <div className="welcome-card">
+          <div className="ticket-heading">
             <div>
-              <span className="eyebrow">SIGNED IN SUCCESSFULLY</span>
-              <h2>Your support workspace.</h2>
-              <p>
-                You're signed in as {user.role}. Your workspace is ready
-                for ticket and resource management.
-              </p>
+              <h2>Recent tickets</h2>
+              <p>Your latest support requests</p>
             </div>
-            <div className="welcome-art">✳</div>
+            <span>{stats.total} tickets</span>
           </div>
 
-          <div className="section-title">
-            <h2>Workspace modules</h2>
-            <span>YOUR TOOLS</span>
-          </div>
-
-          <div className="module-grid">
-            <div className="module-card">
-              <div className="module-icon">▤</div>
-              <h3>Tickets</h3>
-              <p>Track, categorize, and manage support requests.</p>
+          {ticketLoading ? (
+            <div className="empty-state">Loading tickets...</div>
+          ) : ticketError ? (
+            <div className="alert">{ticketError}</div>
+          ) : tickets.length === 0 ? (
+            <div className="empty-state">No tickets found.</div>
+          ) : (
+            <div className="ticket-table-wrap">
+              <table className="ticket-table">
+                <thead>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets.map(t => (
+                    <tr key={t._id}>
+                      <td className="ticket-id">{t.externalId}</td>
+                      <td className="ticket-subject">{t.subject}</td>
+                      <td>
+                        <span className="category-tag">{t.category}</span>
+                      </td>
+                      <td>
+                        <span className={`priority-tag ${t.priority.toLowerCase()}`}>
+                          {t.priority}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`status-tag ${t.status.toLowerCase()}`}>
+                          {t.status.replace("_", " ")}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            <div className="module-card">
-              <div className="module-icon">▦</div>
-              <h3>Resources</h3>
-              <p>Browse rooms, labs, and available equipment.</p>
-            </div>
-
-            <div className="module-card">
-              <div className="module-icon">◷</div>
-              <h3>Bookings</h3>
-              <p>Request resources and manage reservations.</p>
-            </div>
-          </div>
+          )}
         </section>
 
         <footer className="footer">
